@@ -135,8 +135,6 @@ include_once('head.php');
         // Set the active page based on localStorage end
 
 
-
-
         // Function to fetch data from API
         function getData(PageNumber, searchQuery = '') {
             if (searchQuery == '') {
@@ -161,8 +159,7 @@ include_once('head.php');
         }
         // Function to fetch data from API end
 
-
-
+        
         // Function to create and display cards
         function createCards(data) {
             const cardShowDiv = $('#card-show');
@@ -195,9 +192,8 @@ include_once('head.php');
 
         makePaginationLinks();
 
-        $('#onReset').on('click', function() {
-            onReset(globalVar.url);
-        });
+        // on reset click event call onReset()
+        $('#onReset').on('click', () => onReset(globalVar.url));
 
 
         makePageActive();
