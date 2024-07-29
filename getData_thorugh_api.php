@@ -7,7 +7,7 @@ include_once('head.php');
 
     <div class="container sticky-top">
         <div class="mt-5 d-flex justify-content-end">
-            <div class="   search-input-button w-50">
+            <div class="search-input-button w-50">
                 <form id="searchbarForm" method="POST" class="d-flex" role="search" id="searchForm">
                     <input class="form-control me-2" id="searchInput" name="search-value" type="search" placeholder="Search" aria-label="Search">
                     <button class="me-2 btn btn-outline-success" id="onSearch" type="submit">Search</button>
@@ -21,7 +21,7 @@ include_once('head.php');
     <div class="container text-center mt-5 mb-5 d-flex flex-wrap">
         <nav aria-label="Page navigation example">
             <ul id="pagination-links" class="pagination">
-                
+
                 <li class="page-item ">
 
                 </li>
@@ -30,15 +30,14 @@ include_once('head.php');
         </nav>
 
 
-        <div id="card-show" class="row g-3">
+        <div id="card-show" class="row mt-5">
 
         </div>
     </div>
 </body>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="dynamic-pagination-paginatify\dist\jquery.pajinatify.js"></script>
-
+<script src="jquery.simplePagination.js"></script>
 
 <script>
     $(document).ready(function() {
@@ -46,55 +45,125 @@ include_once('head.php');
         // Define global variables 
         $('#error-message').text('')
         const globalVar = {
-            perPageItems: 12,
-            items: 100
+            perPageItems: 50,
+            items: 100,
+            url: `http://localhost/get-data-from-api-with-search-pagination/getData_thorugh_api.php#page-${getLocalStorageData()}`
         };
         const range = Math.ceil(globalVar.items / globalVar.perPageItems);
 
-        // Fetch and display initial data
-        getData(getLocalStorageData());
 
-        // Function to get page number from localStorage
+        // get Searchbar form data
+        $('#searchbarForm').on('submit', function(e) {
+            e.preventDefault();
+            var searchInput = $('#searchInput').val().trim();
+            $('#error-message').text('')
+
+            if (searchInput != '') {
+                localStorage.setItem('activePage', 1);
+                $(location).attr('href', globalVar.url);
+                getData(getLocalStorageData(), searchInput);
+                makePageActive();
+            } else {
+                $('#error-message').addClass('text-danger').text('Please first give input');
+            }
+        });
+        // get Searchbar form data end
+
+
+        // On reset functionality
+        function onReset(url) {
+            // $('#onReset').on('click', function() {
+                localStorage.setItem('activePage', 1);
+                $(location).attr('href',url);
+                setTimeout(function() {
+                    getData(getLocalStorageData(), '');
+                    makePageActive();
+                }, 1000);
+        };
+        // On reset functionality end
+
+
+        // Function to get active page number from localStorage
         function getLocalStorageData() {
             return localStorage.getItem('activePage') || 1;
         }
+        // Function to get active page number from localStorage end
 
-        // function onReset() {
-            $('#onReset').on('click', function(e) {
-                // e.preventDefault();
-                // e.preventDefault();
-                localStorage.setItem('activePage', 1);
-                setTimeout(function(){
-                    getData(getLocalStorageData(),'');
-                }, 1000);
-                makePageActive();
+
+        //  Create a pagination links
+        function makePaginationLinks() {
+            $('#pagination-links').pagination({
+                items: globalVar.items,
+                itemsOnPage: globalVar.perPageItems,
+                // cssStyle: 'dark-theme',
+                onPageClick: function(pageNumber = "getLocalStoragedata()") {
+                    console.log('onPageClick pageNumber : ' + pageNumber);
+                    localStorage.setItem('activePage', pageNumber)
+                    setTimeout(function() {
+                        getData(pageNumber, '');
+                    }, 200);
+                    makePageActive();
+                }
+            })
+        }
+        //  Create a pagination links end
+
+
+        // Set the active page based on localStorage
+        function makePageActive() {
+            var getLocalStorageValue = parseInt(getLocalStorageData());
+            console.log(getLocalStorageValue);
+
+            // First remove current and active class from existing tags 
+            $('span.current').each(function() {
+                console.log('find span')
+                var $a = $('<a>').attr('href', '#page-' + $(this).text()).text($(this).text()).addClass('page-link');
+                $(this).replaceWith($a);
+                $a.parent().removeClass('active');
             });
-        // }
+            $('a').removeClass('current'); // Remove the 'current' class from the newly converted <a> elements
+
+            // First remove current and active class from existing tags end
+
+            // replace anchor tag to span and give a active and current class 
+
+            $(`a[href="#page-${getLocalStorageValue}"]`).each(function() {
+                var $span = $('<span>').addClass('current').text($(this).text()); // Create a <span> element with the class "current"
+                $(this).replaceWith($span); // Replace the <a> element with the new <span> element
+                $span.parent().addClass('active'); // Add the 'active' class to the parent <li> element
+
+                // replace anchor tag to span and give a active and current class end
+            });
+        }
+        // Set the active page based on localStorage end
+
+
+
 
         // Function to fetch data from API
         function getData(PageNumber, searchQuery = '') {
-            console.log('in getData');
-            // console.log('searchquery ' + searchQuery)
+            console.log('getData called');
             if (searchQuery == '') {
                 searchQuery = $(searchInput).prop('value');
             }
-            console.log(searchQuery);
+            // console.log(searchQuery);
             // console.log('with checking variable searchquery ' + searchQuery)
             const offset = (PageNumber - 1) * globalVar.perPageItems;
             // console.log(offset);
             if (searchQuery == '' || searchQuery == null) {
-                console.log('searchquery is null');
+                // console.log('searchquery is null');
                 var apiUrl = `https://jsonplaceholder.typicode.com/posts?_start=${offset}&_limit=${globalVar.perPageItems}`;
             } else {
-                console.log('searchquery is not null');
+                // console.log('searchquery is not null');
                 var apiUrl = `https://jsonplaceholder.typicode.com/posts?_start=${offset}&_limit=${globalVar.perPageItems}&q=${encodeURIComponent(searchQuery)}`;
             }
-            // console.log(apiUrl);
+            console.log(apiUrl);
             $.ajax({
                 url: apiUrl,
                 method: "GET",
                 success: function(data) {
                     createCards(data);
+
                     // console.log("Data retrieved successfully:", data);
                 },
                 error: function(xhr, status, error) {
@@ -102,6 +171,7 @@ include_once('head.php');
                 }
             });
         }
+        // Function to fetch data from API end
 
 
 
@@ -112,8 +182,8 @@ include_once('head.php');
 
             data.forEach(item => {
                 const card = `
-                    <div class="col overflow-y-auto col-md-4 col-lg-3">
-                        <div class="card" style="width: 18rem;">
+                    <div class="col col-sm-12 col-md-6 col-lg-4">
+                        <div class="card" >
                             <div class="card-header">
                                 <h2>${item.id}</h2>
                             </div>
@@ -127,53 +197,24 @@ include_once('head.php');
                 cardShowDiv.append(card);
             });
         }
-         // <div class="card-footer">
-                            //     <a href="#" class="btn btn-primary">Go somewhere</a>
-                            // </div>
-
-        // Create pagination links
-        for (let i = 1; i <= range; i++) {
-            var storedId = parseInt(getLocalStorageData());
-            const activeClass = (i === storedId) ? ' active' : '';
-            $('#pagination-links').append(`
-                <li class="page-item${activeClass}" id="page-${i}">
-                    <a class="page-link" href="#" data-page="${i}">${i}</a>
-                </li>`);
-        }
-
-        // Set the active page based on localStorage
-        function makePageActive() {
-            const getLocalStorageValue = getLocalStorageData();
-            $('.page-item').removeClass('active');
-            $(`#page-${getLocalStorageValue}`).addClass('active');
-        }
+        // Function to create and display cards end
 
 
-        // Handle pagination link clicks
-        $(document).on('click', '.page-link', function(e) {
-            e.preventDefault(); // Prevent default anchor behavior
-            const activePageID = $(this).data('page');
+     
 
-            localStorage.setItem("activePage", activePageID);
-            $('.page-item').removeClass('active');
-            $(`#page-${activePageID}`).addClass('active');
+        // Fetch and display initial data
+        getData(getLocalStorageData());
 
-            getData(activePageID);
+        makePaginationLinks();
+
+        $('#onReset').on('click', function() {
+            onReset(globalVar.url);
         });
 
-        // get Searchbar form data
-        $('#searchbarForm').on('submit', function(e) {
-            e.preventDefault();
-            var searchInput = $('#searchInput').val().trim();
-            $('#error-message').text('')
 
-            if (searchInput != '') {
-                localStorage.setItem('activePage', 1);
-                getData(getLocalStorageData(), searchInput);
-                makePageActive();
-            } else {
-                $('#error-message').addClass('text-danger').text('Please first give input');
-            }
-        });
+        makePageActive();
+
+        window.location.href = globalVar.url;
+
     });
 </script>
