@@ -41,11 +41,11 @@ include_once('head.php');
 
 <script>
     $(document).ready(function() {
+        $('#error-message').text('');
 
         // Define global variables 
-        $('#error-message').text('')
         const globalVar = {
-            perPageItems: 50,
+            perPageItems: 20,
             items: 100,
             url: `http://localhost/get-data-from-api-with-search-pagination/getData_thorugh_api.php#page-${getLocalStorageData()}`
         };
@@ -96,15 +96,14 @@ include_once('head.php');
                 items: globalVar.items,
                 itemsOnPage: globalVar.perPageItems,
                 // cssStyle: 'dark-theme',
-                onPageClick: function(pageNumber = "getLocalStoragedata()") {
-                    console.log('onPageClick pageNumber : ' + pageNumber);
+                onPageClick: function(pageNumber = getLocalStoragedata()) {
                     localStorage.setItem('activePage', pageNumber)
                     setTimeout(function() {
                         getData(pageNumber, '');
                     }, 200);
                     makePageActive();
                 }
-            })
+            });
         }
         //  Create a pagination links end
 
@@ -112,11 +111,9 @@ include_once('head.php');
         // Set the active page based on localStorage
         function makePageActive() {
             var getLocalStorageValue = parseInt(getLocalStorageData());
-            console.log(getLocalStorageValue);
 
             // First remove current and active class from existing tags 
             $('span.current').each(function() {
-                console.log('find span')
                 var $a = $('<a>').attr('href', '#page-' + $(this).text()).text($(this).text()).addClass('page-link');
                 $(this).replaceWith($a);
                 $a.parent().removeClass('active');
@@ -142,29 +139,20 @@ include_once('head.php');
 
         // Function to fetch data from API
         function getData(PageNumber, searchQuery = '') {
-            console.log('getData called');
             if (searchQuery == '') {
                 searchQuery = $(searchInput).prop('value');
             }
-            // console.log(searchQuery);
-            // console.log('with checking variable searchquery ' + searchQuery)
             const offset = (PageNumber - 1) * globalVar.perPageItems;
-            // console.log(offset);
             if (searchQuery == '' || searchQuery == null) {
-                // console.log('searchquery is null');
                 var apiUrl = `https://jsonplaceholder.typicode.com/posts?_start=${offset}&_limit=${globalVar.perPageItems}`;
             } else {
-                // console.log('searchquery is not null');
                 var apiUrl = `https://jsonplaceholder.typicode.com/posts?_start=${offset}&_limit=${globalVar.perPageItems}&q=${encodeURIComponent(searchQuery)}`;
             }
-            console.log(apiUrl);
             $.ajax({
                 url: apiUrl,
                 method: "GET",
                 success: function(data) {
                     createCards(data);
-
-                    // console.log("Data retrieved successfully:", data);
                 },
                 error: function(xhr, status, error) {
                     console.error("An error occurred:", status, error);
