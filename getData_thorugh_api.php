@@ -45,7 +45,7 @@ include_once('head.php');
 
         // Define global variables 
         const globalVar = {
-            perPageItems: 20,
+            perPageItems: 10,
             items: 100,
             url: `http://localhost/get-data-from-api-with-search-pagination/getData_thorugh_api.php#page-${getLocalStorageData()}`
         };
@@ -169,8 +169,9 @@ include_once('head.php');
                 const card = `
                     <div class="col-12 col-lg-4 col-md-6 col-sm-12 col-xs-12 mb-2">
                         <div class="card">
-                            <div class="card-header">
-                                <h2>${item.id}</h2>
+                            <div class="card-header d-flex justify-content-between">
+                                <h2> <span> ID :</span> ${item.id}</h2>
+                                <h2> <span>User ID :</span> ${item.userId}</h2>
                             </div>
                             <div class="card-body">
                                 <h5 class="card-title">${item.title}</h5>
