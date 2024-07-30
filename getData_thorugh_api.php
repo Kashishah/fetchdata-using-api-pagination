@@ -65,6 +65,7 @@ include_once('head.php');
                 localStorage.setItem('activePage', 1);
                 $(location).attr('href', globalVar.url);
                 getData(getLocalStorageData(), searchInput);
+                makePaginationLinks();
                 makePageActive();
             } else {
                 $('#error-message').addClass('text-danger').text('Please first give input');
@@ -100,9 +101,9 @@ include_once('head.php');
                 // cssStyle: 'dark-theme',
                 onPageClick: function(pageNumber = getLocalStoragedata()) {
                     localStorage.setItem('activePage', pageNumber)
-                    setTimeout(function() {
+                    // setTimeout(function() {
                         getData(pageNumber, '');
-                    }, 200);
+                    // }, 200);
                     makePageActive();
                 }
             });
@@ -187,11 +188,9 @@ include_once('head.php');
      
 
         // Fetch and display initial data
-        getData(getLocalStorageData());
-
+        getData(getLocalStorageData());   
         // call this function on document load function it will make pagination mumber links
         makePaginationLinks();
-
         // on reset button click event call onReset()
         $('#onReset').on('click', () => onReset(globalVar.url));
 
