@@ -7,11 +7,11 @@ include_once('head.php');
 
     <div class="container sticky-top">
         <div class="mt-5 d-flex justify-content-end">
-            <div class="search-input-button w-50">
+            <div class="search-input-button w-100">
                 <form id="searchbarForm" method="POST" class="d-flex" role="search" id="searchForm">
-                    <input class="form-control me-2" id="searchInput" name="search-value" type="search" placeholder="Search" aria-label="Search">
-                    <button class="me-2 btn btn-outline-success" id="onSearch" type="submit">Search</button>
-                    <button class="me-2 btn btn-outline-success" id="onReset" type="reset">reset</button>
+                    <input class="form-control me-2" id="searchInput" name="search-value" type="search" placeholder="Search any value" aria-label="Search">
+                    <button class="me-2 btn btn-primary" id="onSearch" type="submit">SEARCH</button>
+                    <button class="me-2 btn btn-success" id="onReset" type="reset">RESET</button>
                 </form>
                 <div id="error-message" class="text"></div>
             </div>
@@ -22,7 +22,7 @@ include_once('head.php');
         <nav aria-label="Page navigation example">
             <ul id="pagination-links" class="pagination">
 
-                <li class="page-item ">
+                <li class="page-item">
 
                 </li>
 
@@ -49,7 +49,10 @@ include_once('head.php');
             items: 100,
             url: `http://localhost/get-data-from-api-with-search-pagination/getData_thorugh_api.php#page-${getLocalStorageData()}`
         };
-        const range = Math.ceil(globalVar.items / globalVar.perPageItems);
+
+        /* It works properly but we're using simplepaginate library so it will automatically 
+        divide the pages and page-per-items you can see in makePaginationLink() send the variables already  */
+        // const range = Math.ceil(globalVar.items / globalVar.perPageItems);
 
 
         // get Searchbar form data
@@ -72,13 +75,12 @@ include_once('head.php');
 
         // On reset functionality
         function onReset(url) {
-            // $('#onReset').on('click', function() {
                 localStorage.setItem('activePage', 1);
-                $(location).attr('href',url);
                 setTimeout(function() {
                     getData(getLocalStorageData(), '');
                     makePageActive();
                 }, 1000);
+                $(location).attr('href',url);
         };
         // On reset functionality end
 
@@ -119,16 +121,13 @@ include_once('head.php');
                 $a.parent().removeClass('active');
             });
             $('a').removeClass('current'); // Remove the 'current' class from the newly converted <a> elements
-
             // First remove current and active class from existing tags end
 
             // replace anchor tag to span and give a active and current class 
-
             $(`a[href="#page-${getLocalStorageValue}"]`).each(function() {
                 var $span = $('<span>').addClass('current').text($(this).text()); // Create a <span> element with the class "current"
                 $(this).replaceWith($span); // Replace the <a> element with the new <span> element
                 $span.parent().addClass('active'); // Add the 'active' class to the parent <li> element
-
                 // replace anchor tag to span and give a active and current class end
             });
         }
@@ -167,8 +166,8 @@ include_once('head.php');
 
             data.forEach(item => {
                 const card = `
-                    <div class="col col-sm-12 col-md-6 col-lg-4">
-                        <div class="card" >
+                    <div class="col-12 col-lg-4 col-md-6 col-sm-12 col-xs-12 mb-2">
+                        <div class="card">
                             <div class="card-header">
                                 <h2>${item.id}</h2>
                             </div>
@@ -190,12 +189,13 @@ include_once('head.php');
         // Fetch and display initial data
         getData(getLocalStorageData());
 
+        // call this function on document load function it will make pagination mumber links
         makePaginationLinks();
 
-        // on reset click event call onReset()
+        // on reset button click event call onReset()
         $('#onReset').on('click', () => onReset(globalVar.url));
 
-
+        // It will get localstoragedata and active the page according that id
         makePageActive();
 
         window.location.href = globalVar.url;
